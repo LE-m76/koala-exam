@@ -2,14 +2,11 @@
 <html lang="zh-CN">
 	<head>
 		<meta charset="UTF-8">
-
-		<!-- H5移动端适配必备 -->
 		<meta name="viewport"
 			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="default">
 		<meta name="format-detection" content="telephone=no">
-		<link rel="icon" type="image/png" sizes="32x32" href="./img/aca5124db1ffbaa7cb4961ca70523228.ico">
 		<title>在线考试</title>
 		<style>
 			* {
@@ -25,12 +22,10 @@
 				-webkit-overflow-scrolling: touch;
 			}
 
-			/* 解决Vue模板闪烁 */
 			[v-cloak] {
 				display: none !important;
 			}
 
-			/* ========== 加载状态 ========== */
 			.loading-wrap {
 				position: fixed;
 				top: 0;
@@ -66,7 +61,6 @@
 				}
 			}
 
-			/* ========== 错误状态 ========== */
 			.error-wrap {
 				position: fixed;
 				top: 0;
@@ -103,7 +97,6 @@
 				cursor: pointer;
 			}
 
-			/* ========== 顶部考试信息栏 ========== */
 			.exam-header {
 				background: #fff;
 				padding: 16px;
@@ -142,11 +135,9 @@
 				line-height: 1.6;
 			}
 
-			/* ========== 题目列表 ========== */
 			.question-list {
 				padding: 0 12px;
 				padding-bottom: 120px;
-				/* 给底部按钮和悬浮按钮留空间 */
 			}
 
 			.question-card {
@@ -174,7 +165,6 @@
 				margin-bottom: 16px;
 			}
 
-			/* 单选/多选/判断选项 */
 			.options {
 				display: flex;
 				flex-direction: column;
@@ -261,7 +251,6 @@
 				transform: translate(-50%, -60%) rotate(45deg);
 			}
 
-			/* 填空/简答输入框 */
 			.input-answer {
 				width: 100%;
 				padding: 12px;
@@ -276,7 +265,6 @@
 				resize: vertical;
 			}
 
-			/* 答题状态 */
 			.question-status {
 				font-size: 12px;
 				color: #909399;
@@ -290,12 +278,10 @@
 				color: #f56c6c;
 			}
 
-			/* ========== 右下角圆形悬浮按钮 ========== */
 			.floating-btn {
 				position: fixed;
 				right: 20px;
 				bottom: 80px;
-				/* 在提交按钮上方 */
 				width: 56px;
 				height: 56px;
 				border-radius: 50%;
@@ -316,7 +302,6 @@
 				transform: scale(0.95);
 			}
 
-			/* ========== 题号弹窗 ========== */
 			.question-modal {
 				position: fixed;
 				top: 0;
@@ -327,7 +312,6 @@
 				z-index: 999;
 				display: flex;
 				align-items: flex-end;
-				/* 从底部弹出 */
 				transition: opacity 0.3s ease;
 			}
 
@@ -381,11 +365,9 @@
 				margin-bottom: 16px;
 			}
 
-			/* 题号网格布局 */
 			.num-grid {
 				display: grid;
 				grid-template-columns: repeat(5, 1fr);
-				/* 每行5个 */
 				gap: 12px;
 				max-height: 50vh;
 				overflow-y: auto;
@@ -395,7 +377,6 @@
 			.num-item {
 				width: 100%;
 				aspect-ratio: 1/1;
-				/* 正方形 */
 				display: flex;
 				align-items: center;
 				justify-content: center;
@@ -422,7 +403,6 @@
 				color: #fff;
 			}
 
-			/* ========== 底部提交按钮 ========== */
 			.submit-wrap {
 				position: fixed;
 				bottom: 0;
@@ -460,22 +440,18 @@
 	</head>
 	<body>
 		<div id="app" v-cloak>
-			<!-- 加载状态 -->
 			<div class="loading-wrap" v-if="loading">
 				<div class="loading-spinner"></div>
 				<div class="loading-text">正在加载考试数据...</div>
 			</div>
 
-			<!-- 错误状态 -->
 			<div class="error-wrap" v-if="error">
 				<div class="error-icon">⚠️</div>
 				<div class="error-text">{{ errorMessage }}</div>
 				<button class="retry-btn" @click="loadExamData">重新加载</button>
 			</div>
 
-			<!-- 考试内容 -->
 			<div v-if="!loading && !error">
-				<!-- 顶部考试信息 -->
 				<div class="exam-header">
 					<div class="exam-name">{{ examInfo.name }}</div>
 					<div class="time-title">剩余考试时间</div>
@@ -487,18 +463,14 @@
 					</div>
 				</div>
 
-				<!-- 题目列表 -->
 				<div class="question-list">
 					<div class="question-card" v-for="(question, idx) in questionList" :key="question.id"
 						:id="'q-'+idx">
-						<!-- 题型标签 -->
 						<div class="question-type">{{ getTypeName(question.type) }}</div>
-						<!-- 题目内容 -->
 						<div class="question-title">
 							{{ idx + 1 }}. {{ question.title }}
 						</div>
 
-						<!-- 单选题 -->
 						<div class="options" v-if="question.type === 1">
 							<div class="option-item" :class="{
 								selected: question.userAnswer === option.id,
@@ -510,7 +482,6 @@
 							</div>
 						</div>
 
-						<!-- 多选题 -->
 						<div class="options" v-if="question.type === 2">
 							<div class="option-item" :class="{
 								selected: question.userAnswer && question.userAnswer.includes(option.id),
@@ -527,7 +498,6 @@
 							</button>
 						</div>
 
-						<!-- 判断题 -->
 						<div class="options" v-if="question.type === 3">
 							<div class="option-item" :class="{
 								selected: question.userAnswer === option.id,
@@ -539,19 +509,16 @@
 							</div>
 						</div>
 
-						<!-- 填空题 -->
 						<div v-if="question.type === 4">
 							<input class="input-answer" placeholder="请输入答案" v-model="question.userAnswer"
 								@blur="submitFillAnswer(idx)">
 						</div>
 
-						<!-- 简答题 -->
 						<div v-if="question.type === 5">
 							<textarea class="input-answer" placeholder="请输入简答题答案" v-model="question.userAnswer"
 								@blur="submitEssayAnswer(idx)"></textarea>
 						</div>
 
-						<!-- 答题状态 -->
 						<div class="question-status"
 							:class="{correct: question.correct, wrong: question.correct === false}">
 							{{ !question.answered ? '未作答' : (question.correct ? '回答正确' : '回答错误') }}
@@ -559,12 +526,10 @@
 					</div>
 				</div>
 
-				<!-- 右下角圆形悬浮按钮 -->
 				<div class="floating-btn" @click="showModal = true">
 					{{ currentIndex + 1 }}
 				</div>
 
-				<!-- 题号弹窗 -->
 				<div class="question-modal" :class="{hidden: !showModal}" @click.self="showModal = false">
 					<div class="modal-content">
 						<div class="modal-header">
@@ -586,7 +551,6 @@
 					</div>
 				</div>
 
-				<!-- 底部提交按钮 -->
 				<div class="submit-wrap">
 					<button class="submit-btn" :disabled="submitting" @click="finishExam">
 						{{ submitting ? '正在交卷...' : '交卷并查看成绩' }}
@@ -595,25 +559,26 @@
 			</div>
 		</div>
 
-		<!-- 引入Vue和Axios -->
 		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 		<script>
 			new Vue({
 				el: '#app',
 				data: {
-					examId: '', // 从URL获取的考试ID
-					userId: 'user_123456', // 实际项目中从登录状态获取
-					examInfo: {}, // 考试基本信息
-					questionList: [], // 题目列表
-					remainTime: "00:00", // 剩余时间
-					currentIndex: 0, // 当前题号
-					showModal: false, // 控制题号弹窗显示
-					loading: true, // 加载状态
-					error: false, // 错误状态
-					errorMessage: '', // 错误信息
-					submitting: false, // 提交状态
-					timer: null // 倒计时定时器
+					examId: '',
+					userId: 'user_123456',
+					examInfo: {},
+					questionList: [],
+					remainTime: "00:00",
+					currentIndex: 0,
+					showModal: false,
+					loading: true,
+					error: false,
+					errorMessage: '',
+					submitting: false,
+					timer: null,
+					persistKey: 'exam_persist_data',
+					examStartTime: 0
 				},
 				computed: {
 					doneNum() {
@@ -622,7 +587,6 @@
 					undoneNum() {
 						return this.questionList.filter(q => !q.answered).length;
 					},
-					// 根据correct属性自动计算总分
 					totalScore() {
 						return this.questionList.reduce((sum, q) => {
 							return sum + (q.correct ? q.score : 0);
@@ -630,354 +594,47 @@
 					}
 				},
 				mounted() {
-					// 1. 从URL获取examId参数
 					this.examId = this.getUrlParam('examId');
-
-					// 2. 加载考试数据
 					this.loadExamData();
-
-					// 3. 监听页面滚动，自动同步当前题号
 					window.addEventListener('scroll', this.handleScroll, {
 						passive: true
 					});
 				},
 				beforeDestroy() {
 					window.removeEventListener('scroll', this.handleScroll);
-					// 清除定时器
-					if (this.timer) {
-						clearInterval(this.timer);
-					}
+					if (this.timer) clearInterval(this.timer);
 				},
 				methods: {
-					// 获取URL参数工具函数
-					getUrlParam(name) {
-						const reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-						const r = window.location.search.substr(1).match(reg);
-						if (r != null) return decodeURIComponent(r[2]);
-						return '';
-					},
-
-					// 题型名称映射
-					getTypeName(type) {
-						const map = {
-							1: '单选题',
-							2: '多选题',
-							3: '判断题',
-							4: '填空题',
-							5: '简答题'
-						};
-						return map[type] || '未知题型';
-					},
-
-					// 加载考试数据
-					async loadExamData() {
-						this.loading = true;
-						this.error = false;
-
-						try {
-							let response;
-							console.log(this.examId)
-							if (false) {
-								// 有examId，请求真实接口
-								response = await axios.get(`/api/exam/getExamInfo?examId=${this.examId}`);
-							} else {
-								// 无examId，使用模拟数据（预览模式）
-								console.log('预览模式：使用模拟数据');
-								response = {
-									data: {
-										code: 200,
-										data: {
-											examInfo: {
-												name: '2026年计算机基础综合考试',
-												duration: 60 // 考试时长，单位：分钟
-											},
-											questionList: [
-												// 单选题
-												{
-													id: 1,
-													type: 1,
-													title: '1+1等于几？',
-													score: 10,
-													answer: 2, // 正确答案ID
-													userAnswer: null,
-													answered: false,
-													correct: null,
-													options: [{
-															id: 1,
-															label: "A",
-															content: "1"
-														},
-														{
-															id: 2,
-															label: "B",
-															content: "2"
-														},
-														{
-															id: 3,
-															label: "C",
-															content: "3"
-														},
-														{
-															id: 4,
-															label: "D",
-															content: "4"
-														}
-													]
-												},
-												// 多选题
-												{
-													id: 2,
-													type: 2,
-													title: '以下哪些是编程语言？',
-													score: 15,
-													answer: [1, 2, 3], // 正确答案ID数组
-													userAnswer: [],
-													answered: false,
-													correct: null,
-													options: [{
-															id: 1,
-															label: "A",
-															content: "Java"
-														},
-														{
-															id: 2,
-															label: "B",
-															content: "Python"
-														},
-														{
-															id: 3,
-															label: "C",
-															content: "JavaScript"
-														},
-														{
-															id: 4,
-															label: "D",
-															content: "HTML"
-														}
-													]
-												},
-												// 判断题
-												{
-													id: 3,
-													type: 3,
-													title: 'JavaScript是一种编译型语言。',
-													score: 10,
-													answer: 2, // 1:正确 2:错误
-													userAnswer: null,
-													answered: false,
-													correct: null,
-													options: [{
-															id: 1,
-															label: "A",
-															content: "正确"
-														},
-														{
-															id: 2,
-															label: "B",
-															content: "错误"
-														}
-													]
-												},
-												// 填空题
-												{
-													id: 4,
-													type: 4,
-													title: 'HTML的全称是______。',
-													score: 15,
-													answer: '超文本标记语言', // 正确答案
-													userAnswer: '',
-													answered: false,
-													correct: null
-												},
-												// 简答题
-												{
-													id: 5,
-													type: 5,
-													title: '请简述HTTP和HTTPS的区别。',
-													score: 50,
-													answer: '', // 简答题由人工批改
-													userAnswer: '',
-													answered: false,
-													correct: null
-												}
-											]
-										}
-									}
-								};
-							}
-
-							// 处理接口返回数据
-							if (response.data.code === 200) {
-								this.examInfo = response.data.data.examInfo;
-								this.questionList = response.data.data.questionList;
-
-								// 启动倒计时（使用接口返回的考试时长）
-								this.startCountdown(this.examInfo.duration);
-
-								this.loading = false;
-							} else {
-								throw new Error(response.data.message || '获取考试数据失败');
-							}
-						} catch (err) {
-							console.error('加载考试数据失败：', err);
-							this.error = true;
-							this.errorMessage = err.message || '网络错误，请检查网络连接';
-							this.loading = false;
+					initPersistData() {
+						let data = localStorage.getItem(this.persistKey);
+						if (data) {
+							data = JSON.parse(data);
+							if (data.examId === this.examId) this.examStartTime = data.examStartTime;
 						}
 					},
-
-					// 提交答案到后端（通用方法）
-					async submitAnswerToBackend(questionIndex) {
-						const question = this.questionList[questionIndex];
-
-						try {
-							const submitData = {
-								userId: this.userId,
-								questionsId: question.id,
-								userAnswer: question.userAnswer
-							};
-
-							let response;
-							if (false) {
-								// 真实环境：提交到后端接口
-								response = await axios.post('/api/exam/submitAnswer', submitData);
-							} else {
-								// 预览模式：本地模拟判分
-								console.log('提交答案：', submitData);
-								await new Promise(resolve => setTimeout(resolve, 300));
-
-								// 模拟后端判断是否正确
-								let isCorrect = false;
-								if (question.type === 1 || question.type === 3) {
-									// 单选/判断
-									isCorrect = question.userAnswer === question.answer;
-								} else if (question.type === 2) {
-									// 多选：必须完全一致才算正确
-									isCorrect = JSON.stringify(question.userAnswer.sort()) === JSON.stringify(
-										question.answer.sort());
-								} else if (question.type === 4) {
-									// 填空：忽略大小写和前后空格
-									isCorrect = question.userAnswer.trim().toLowerCase() === question.answer.trim()
-										.toLowerCase();
-								} else if (question.type === 5) {
-									// 简答：默认正确，实际由人工批改
-									isCorrect = true;
-								}
-
-								response = {
-									data: {
-										code: 200,
-										data: {
-											correct: isCorrect
-										}
-									}
-								};
-							}
-
-							if (response.data.code === 200) {
-								// 更新题目状态
-								question.answered = true;
-								question.correct = response.data.data.correct;
-							}
-						} catch (err) {
-							console.error('提交答案失败：', err);
-							alert('答案提交失败，请稍后重试');
+					savePersistData() {
+						localStorage.setItem(this.persistKey, JSON.stringify({
+							examId: this.examId,
+							examStartTime: this.examStartTime
+						}));
+					},
+					startCountdownPersist(minutes) {
+						const totalDuration = minutes * 60;
+						const now = Date.now();
+						if (!this.examStartTime) {
+							this.examStartTime = now;
+							this.savePersistData();
 						}
-					},
-
-					// 单选题/判断题选择答案
-					selectSingleAnswer(questionIndex, optionId) {
-						const question = this.questionList[questionIndex];
-						if (question.answered) return; // 已答题目不能修改
-
-						question.userAnswer = optionId;
-						// 单选/判断选择后自动提交
-						this.submitAnswerToBackend(questionIndex);
-					},
-
-					// 多选题选择答案
-					selectMultipleAnswer(questionIndex, optionId) {
-						const question = this.questionList[questionIndex];
-						if (question.answered) return;
-
-						if (!question.userAnswer) {
-							question.userAnswer = [];
+						const pastSeconds = Math.floor((now - this.examStartTime) / 1000);
+						let totalSeconds = totalDuration - pastSeconds;
+						if (totalSeconds <= 0) {
+							alert('考试时间已结束，将自动交卷');
+							this.finishExam();
+							return;
 						}
-
-						const index = question.userAnswer.indexOf(optionId);
-						if (index > -1) {
-							// 已选中，取消选择
-							question.userAnswer.splice(index, 1);
-						} else {
-							// 未选中，添加选择
-							question.userAnswer.push(optionId);
-						}
-					},
-
-					// 提交多选题答案
-					submitMultipleAnswer(questionIndex) {
-						this.submitAnswerToBackend(questionIndex);
-					},
-
-					// 填空题失去焦点时提交
-					submitFillAnswer(questionIndex) {
-						const question = this.questionList[questionIndex];
-						if (question.answered || !question.userAnswer.trim()) return;
-
-						this.submitAnswerToBackend(questionIndex);
-					},
-
-					// 简答题失去焦点时提交
-					submitEssayAnswer(questionIndex) {
-						const question = this.questionList[questionIndex];
-						if (question.answered || !question.userAnswer.trim()) return;
-
-						this.submitAnswerToBackend(questionIndex);
-					},
-
-					// 滚动监听，自动计算当前题号
-					handleScroll() {
-						const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-						const cards = document.querySelectorAll('.question-card');
-
-						// 找到第一个顶部超过滚动位置的题目
-						for (let i = 0; i < cards.length; i++) {
-							const cardTop = cards[i].offsetTop - 20; // 20px偏移量，提前一点切换
-							if (scrollTop < cardTop) {
-								this.currentIndex = Math.max(0, i - 1);
-								return;
-							}
-						}
-						// 滚动到底部时显示最后一题
-						this.currentIndex = cards.length - 1;
-					},
-
-					// 跳转到指定题目
-					goToQuestion(idx) {
-						this.currentIndex = idx;
-						this.showModal = false; // 关闭弹窗
-
-						this.$nextTick(() => {
-							const card = document.getElementById('q-' + idx);
-							if (card) {
-								window.scrollTo({
-									top: card.offsetTop - 10,
-									behavior: 'smooth'
-								});
-							}
-						});
-					},
-
-					// 倒计时（接受分钟数作为参数）
-					startCountdown(minutes) {
-						let totalSeconds = minutes * 60;
-
-						// 先更新一次显示
 						const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
 						const s = (totalSeconds % 60).toString().padStart(2, '0');
 						this.remainTime = `${m}:${s}`;
-
-						// 启动定时器
 						this.timer = setInterval(() => {
 							totalSeconds--;
 							if (totalSeconds <= 0) {
@@ -991,25 +648,532 @@
 							this.remainTime = `${m}:${s}`;
 						}, 1000);
 					},
-
-					// 交卷
-					async finishExam() {
-						this.submitting = true;
-
+					getUrlParam(name) {
+						const reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+						const r = window.location.search.substr(1).match(reg);
+						if (r != null) return decodeURIComponent(r[2]);
+						return '';
+					},
+					getTypeName(type) {
+						const map = {
+							1: '单选题',
+							2: '多选题',
+							3: '判断题',
+							4: '填空题',
+							5: '简答题'
+						};
+						return map[type] || '未知题型';
+					},
+					async loadExamData() {
+						this.loading = true;
+						this.error = false;
 						try {
-							// 提交所有未提交的答案
+							console.log('预览模式：20道题');
+							response = {
+								data: {
+									code: 200,
+									data: {
+										examInfo: {
+											name: '2026年计算机基础综合考试',
+											duration: 60
+										},
+										questionList: [{
+												id: 1,
+												type: 1,
+												title: 'HTML中文全称是？',
+												score: 5,
+												answer: 2,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: '样式表语言'
+												}, {
+													id: 2,
+													label: 'B',
+													content: '超文本标记语言'
+												}, {
+													id: 3,
+													label: 'C',
+													content: '脚本语言'
+												}, {
+													id: 4,
+													label: 'D',
+													content: '数据库语言'
+												}]
+											},
+											{
+												id: 2,
+												type: 1,
+												title: 'CSS中文全称是？',
+												score: 5,
+												answer: 1,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: '层叠样式表'
+												}, {
+													id: 2,
+													label: 'B',
+													content: '超文本语言'
+												}, {
+													id: 3,
+													label: 'C',
+													content: '标记语言'
+												}, {
+													id: 4,
+													label: 'D',
+													content: '脚本语言'
+												}]
+											},
+											{
+												id: 3,
+												type: 1,
+												title: '下列哪个是JavaScript的正确写法？',
+												score: 5,
+												answer: 3,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: 'js'
+												}, {
+													id: 2,
+													label: 'B',
+													content: 'script'
+												}, {
+													id: 3,
+													label: 'C',
+													content: 'JavaScript'
+												}, {
+													id: 4,
+													label: 'D',
+													content: 'style'
+												}]
+											},
+											{
+												id: 4,
+												type: 1,
+												title: '下列哪个标签是标题标签？',
+												score: 5,
+												answer: 2,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: 'div'
+												}, {
+													id: 2,
+													label: 'B',
+													content: 'h1'
+												}, {
+													id: 3,
+													label: 'C',
+													content: 'p'
+												}, {
+													id: 4,
+													label: 'D',
+													content: 'span'
+												}]
+											},
+											{
+												id: 5,
+												type: 1,
+												title: '下列哪个是段落标签？',
+												score: 5,
+												answer: 3,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: 'a'
+												}, {
+													id: 2,
+													label: 'B',
+													content: 'img'
+												}, {
+													id: 3,
+													label: 'C',
+													content: 'p'
+												}, {
+													id: 4,
+													label: 'D',
+													content: 'ul'
+												}]
+											},
+											{
+												id: 6,
+												type: 2,
+												title: '下列哪些属于前端三大件？',
+												score: 10,
+												answer: [1, 2, 3],
+												userAnswer: [],
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: 'HTML'
+												}, {
+													id: 2,
+													label: 'B',
+													content: 'CSS'
+												}, {
+													id: 3,
+													label: 'C',
+													content: 'JS'
+												}, {
+													id: 4,
+													label: 'D',
+													content: 'MySQL'
+												}]
+											},
+											{
+												id: 7,
+												type: 2,
+												title: '下列哪些属于块级元素？',
+												score: 10,
+												answer: [1, 2, 4],
+												userAnswer: [],
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: 'div'
+												}, {
+													id: 2,
+													label: 'B',
+													content: 'p'
+												}, {
+													id: 3,
+													label: 'C',
+													content: 'span'
+												}, {
+													id: 4,
+													label: 'D',
+													content: 'h1'
+												}]
+											},
+											{
+												id: 8,
+												type: 2,
+												title: '下列哪些属于行内元素？',
+												score: 10,
+												answer: [2, 3],
+												userAnswer: [],
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: 'div'
+												}, {
+													id: 2,
+													label: 'B',
+													content: 'span'
+												}, {
+													id: 3,
+													label: 'C',
+													content: 'a'
+												}, {
+													id: 4,
+													label: 'D',
+													content: 'ul'
+												}]
+											},
+											{
+												id: 9,
+												type: 2,
+												title: '下列哪些属于编程语言？',
+												score: 10,
+												answer: [1, 2, 3],
+												userAnswer: [],
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: 'Java'
+												}, {
+													id: 2,
+													label: 'B',
+													content: 'Python'
+												}, {
+													id: 3,
+													label: 'C',
+													content: 'JS'
+												}, {
+													id: 4,
+													label: 'D',
+													content: 'HTML'
+												}]
+											},
+											{
+												id: 10,
+												type: 2,
+												title: '下列哪些属于数据库？',
+												score: 10,
+												answer: [2, 4],
+												userAnswer: [],
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: 'Vue'
+												}, {
+													id: 2,
+													label: 'B',
+													content: 'MySQL'
+												}, {
+													id: 3,
+													label: 'C',
+													content: 'React'
+												}, {
+													id: 4,
+													label: 'D',
+													content: 'Oracle'
+												}]
+											},
+											{
+												id: 11,
+												type: 3,
+												title: 'HTML是编程语言。',
+												score: 5,
+												answer: 2,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													content: '正确'
+												}, {
+													id: 2,
+													content: '错误'
+												}]
+											},
+											{
+												id: 12,
+												type: 3,
+												title: 'CSS可以控制网页样式。',
+												score: 5,
+												answer: 1,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													content: '正确'
+												}, {
+													id: 2,
+													content: '错误'
+												}]
+											},
+											{
+												id: 13,
+												type: 3,
+												title: 'JS可以实现网页交互。',
+												score: 5,
+												answer: 1,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													content: '正确'
+												}, {
+													id: 2,
+													content: '错误'
+												}]
+											},
+											{
+												id: 14,
+												type: 3,
+												title: 'div是行内元素。',
+												score: 5,
+												answer: 2,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													content: '正确'
+												}, {
+													id: 2,
+													content: '错误'
+												}]
+											},
+											{
+												id: 15,
+												type: 3,
+												title: 'span是块级元素。',
+												score: 5,
+												answer: 2,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													content: '正确'
+												}, {
+													id: 2,
+													content: '错误'
+												}]
+											},
+											{
+												id: 16,
+												type: 4,
+												title: '实现网页结构的语言是：______',
+												score: 10,
+												answer: 'HTML',
+												userAnswer: '',
+												answered: false,
+												correct: null
+											},
+											{
+												id: 17,
+												type: 4,
+												title: '实现网页样式的语言是：______',
+												score: 10,
+												answer: 'CSS',
+												userAnswer: '',
+												answered: false,
+												correct: null
+											}
+										]
+									}
+								}
+							};
+							if (response.data.code === 200) {
+								this.examInfo = response.data.data.examInfo;
+								this.questionList = response.data.data.questionList;
+								this.initPersistData();
+								this.startCountdownPersist(this.examInfo.duration);
+								this.loading = false;
+							}
+						} catch (err) {
+							this.error = true;
+							this.errorMessage = err.message || '网络错误';
+							this.loading = false;
+						}
+					},
+					async submitAnswerToBackend(questionIndex) {
+						const question = this.questionList[questionIndex];
+						try {
+							const submitData = {
+								userId: this.userId,
+								questionsId: question.id,
+								userAnswer: question.userAnswer
+							};
+							await new Promise(resolve => setTimeout(resolve, 200));
+							let isCorrect = false;
+							if (question.type === 1 || question.type === 3) {
+								isCorrect = question.userAnswer === question.answer;
+							} else if (question.type === 2) {
+								isCorrect = JSON.stringify(question.userAnswer.sort()) === JSON.stringify(question
+									.answer.sort());
+							} else if (question.type === 4) {
+								isCorrect = question.userAnswer.trim().toLowerCase() === question.answer.trim()
+									.toLowerCase();
+							} else if (question.type === 5) {
+								isCorrect = true;
+							}
+							question.answered = true;
+							question.correct = isCorrect;
+						} catch (err) {
+							alert('提交失败');
+						}
+					},
+					selectSingleAnswer(questionIndex, optionId) {
+						const question = this.questionList[questionIndex];
+						if (question.answered) return;
+						// if (!confirm('确定要提交这个答案吗？')) return;
+						question.userAnswer = optionId;
+						this.submitAnswerToBackend(questionIndex);
+					},
+					selectMultipleAnswer(questionIndex, optionId) {
+						const question = this.questionList[questionIndex];
+						if (question.answered) return;
+						if (!question.userAnswer) question.userAnswer = [];
+						const index = question.userAnswer.indexOf(optionId);
+						index > -1 ? question.userAnswer.splice(index, 1) : question.userAnswer.push(optionId);
+					},
+					submitMultipleAnswer(questionIndex) {
+						// if (!confirm('确定提交多选题答案？')) return;
+						this.submitAnswerToBackend(questionIndex);
+					},
+					submitFillAnswer(questionIndex) {
+						const q = this.questionList[questionIndex];
+						if (q.answered || !q.userAnswer.trim()) return;
+						if (!confirm('确定提交填空题答案？')) return;
+						this.submitAnswerToBackend(questionIndex);
+					},
+					submitEssayAnswer(questionIndex) {
+						const q = this.questionList[questionIndex];
+						if (q.answered || !q.userAnswer.trim()) return;
+						if (!confirm('确定提交简答题答案？')) return;
+						this.submitAnswerToBackend(questionIndex);
+					},
+					handleScroll() {
+						const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+						const cards = document.querySelectorAll('.question-card');
+						for (let i = 0; i < cards.length; i++) {
+							const cardTop = cards[i].offsetTop - 20;
+							if (scrollTop < cardTop) {
+								this.currentIndex = Math.max(0, i - 1);
+								return;
+							}
+						}
+						this.currentIndex = cards.length - 1;
+					},
+					goToQuestion(idx) {
+						this.currentIndex = idx;
+						this.showModal = false;
+						this.$nextTick(() => {
+							const card = document.getElementById('q-' + idx);
+							if (card) window.scrollTo({
+								top: card.offsetTop - 10,
+								behavior: 'smooth'
+							});
+						});
+					},
+					async finishExam() {
+						if (!confirm('确定要交卷吗？提交后无法修改！')) return;
+						for (let i = 0; i < this.questionList.length; i++) {
+							const q = this.questionList[i];
+							let hasAnswer = false;
+							if (q.type === 1 || q.type === 3) hasAnswer = q.userAnswer != null;
+							else if (q.type === 2) hasAnswer = q.userAnswer && q.userAnswer.length > 0;
+							else if (q.type === 4 || q.type === 5) hasAnswer = q.userAnswer && q.userAnswer
+								.trim() !== '';
+							if (!hasAnswer) {
+								alert(`第 ${i+1} 题未完成，请完成后再交卷！`);
+								this.goToQuestion(i);
+								return;
+							}
+						}
+						this.submitting = true;
+						try {
 							for (let i = 0; i < this.questionList.length; i++) {
 								const q = this.questionList[i];
-								if (!q.answered && q.userAnswer && q.userAnswer.toString().trim()) {
-									await this.submitAnswerToBackend(i);
-								}
+								if (!q.answered) await this.submitAnswerToBackend(i);
 							}
-
-							// 跳转到结果页面
+							localStorage.removeItem(this.persistKey);
 							window.location.href = `result.html?score=${this.totalScore}`;
 						} catch (err) {
-							console.error('交卷失败：', err);
-							alert('交卷失败，请稍后重试');
+							alert('交卷失败');
 						} finally {
 							this.submitting = false;
 						}
