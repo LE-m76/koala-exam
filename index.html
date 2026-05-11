@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<link rel="icon" type="image/png"
+			href="https://www.maoblog.dpdns.org/panacea/image/5ad73da9a183405585c6b0e913a8ecce.png">
+		<meta name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="default">
+		<meta name="format-detection" content="telephone=no">
+		<title>在线考试</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+				font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+				-webkit-tap-highlight-color: transparent;
+			}
+
+			body {
+				background-color: #f5f7fa;
+				-webkit-overflow-scrolling: touch;
+			}
+
+			[v-cloak] {
+				display: none !important;
+			}
+
+			.loading-wrap {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: #fff;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				z-index: 1000;
+			}
+
+			.loading-spinner {
+				width: 40px;
+				height: 40px;
+				border: 3px solid #e4e7ed;
+				border-top-color: #409eff;
+				border-radius: 50%;
+				animation: spin 1s linear infinite;
+				margin-bottom: 16px;
+			}
+
+			.loading-text {
+				font-size: 14px;
+				color: #666;
+			}
+
+			@keyframes spin {
+				to {
+					transform: rotate(360deg);
+				}
+			}
+
+			.error-wrap {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: #fff;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				z-index: 1000;
+			}
+
+			.error-icon {
+				font-size: 60px;
+				color: #f56c6c;
+				margin-bottom: 16px;
+			}
+
+			.error-text {
+				font-size: 16px;
+				color: #333;
+				margin-bottom: 20px;
+			}
+
+			.retry-btn {
+				padding: 10px 24px;
+				background: #409eff;
+				color: #fff;
+				border: none;
+				border-radius: 20px;
+				font-size: 14px;
+				cursor: pointer;
+			}
+
+			.exam-header {
+				background: #fff;
+				padding: 16px;
+				border-radius: 12px;
+				margin: 12px;
+				box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+			}
+
+			.exam-name {
+				text-align: center;
+				font-size: 16px;
+				font-weight: 500;
+				color: #333;
+				margin-bottom: 8px;
+			}
+
+			.time-title {
+				text-align: center;
+				font-size: 18px;
+				color: #333;
+				margin-bottom: 8px;
+			}
+
+			.time-value {
+				text-align: center;
+				font-size: 28px;
+				font-weight: bold;
+				color: #f56c6c;
+				margin-bottom: 12px;
+			}
+
+			.count-info {
+				text-align: center;
+				font-size: 14px;
+				color: #666;
+				line-height: 1.6;
+			}
+
+			.question-list {
+				padding: 0 12px;
+				padding-bottom: 120px;
+			}
+
+			.question-card {
+				background: #fff;
+				border-radius: 12px;
+				padding: 16px;
+				margin-bottom: 12px;
+				box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+			}
+
+			.question-type {
+				font-size: 12px;
+				color: #909399;
+				margin-bottom: 8px;
+				padding: 2px 8px;
+				background: #f5f7fa;
+				border-radius: 4px;
+				display: inline-block;
+			}
+
+			.question-title {
+				font-size: 16px;
+				color: #333;
+				line-height: 1.6;
+				margin-bottom: 16px;
+			}
+
+			.options {
+				display: flex;
+				flex-direction: column;
+				gap: 12px;
+				margin-bottom: 12px;
+			}
+
+			.option-item {
+				display: flex;
+				align-items: center;
+				padding: 12px;
+				border: 1px solid #e4e7ed;
+				border-radius: 8px;
+				cursor: pointer;
+				transition: all 0.2s;
+			}
+
+			.option-item.selected {
+				background: #ecf5ff;
+				border-color: #409eff;
+				color: #409eff;
+			}
+
+			.option-item.correct {
+				background: #f0f9eb;
+				border-color: #67c23a;
+				color: #67c23a;
+			}
+
+			.option-item.wrong {
+				background: #fef0f0;
+				border-color: #f56c6c;
+				color: #f56c6c;
+			}
+
+			.option-radio {
+				width: 18px;
+				height: 18px;
+				border: 2px solid #c0c4cc;
+				border-radius: 50%;
+				margin-right: 10px;
+				position: relative;
+			}
+
+			.option-item.selected .option-radio {
+				border-color: #409eff;
+			}
+
+			.option-item.selected .option-radio::after {
+				content: '';
+				position: absolute;
+				width: 10px;
+				height: 10px;
+				background: #409eff;
+				border-radius: 50%;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+			}
+
+			.option-checkbox {
+				width: 18px;
+				height: 18px;
+				border: 2px solid #c0c4cc;
+				border-radius: 4px;
+				margin-right: 10px;
+				position: relative;
+			}
+
+			.option-item.selected .option-checkbox {
+				background: #409eff;
+				border-color: #409eff;
+			}
+
+			.option-item.selected .option-checkbox::after {
+				content: '';
+				position: absolute;
+				width: 6px;
+				height: 10px;
+				border: solid #fff;
+				border-width: 0 2px 2px 0;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -60%) rotate(45deg);
+			}
+
+			.input-answer {
+				width: 100%;
+				padding: 12px;
+				border: 1px solid #e4e7ed;
+				border-radius: 8px;
+				font-size: 15px;
+				margin-bottom: 12px;
+			}
+
+			textarea.input-answer {
+				min-height: 100px;
+				resize: vertical;
+			}
+
+			.question-status {
+				font-size: 12px;
+				color: #909399;
+			}
+
+			.question-status.correct {
+				color: #67c23a;
+			}
+
+			.question-status.wrong {
+				color: #f56c6c;
+			}
+
+			.floating-btn {
+				position: fixed;
+				right: 20px;
+				bottom: 80px;
+				width: 56px;
+				height: 56px;
+				border-radius: 50%;
+				background: #409eff;
+				color: #fff;
+				font-size: 16px;
+				font-weight: bold;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
+				cursor: pointer;
+				z-index: 998;
+				transition: all 0.2s;
+			}
+
+			.floating-btn:active {
+				transform: scale(0.95);
+			}
+
+			.question-modal {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: rgba(0, 0, 0, 0.5);
+				z-index: 999;
+				display: flex;
+				align-items: flex-end;
+				transition: opacity 0.3s ease;
+			}
+
+			.question-modal.hidden {
+				opacity: 0;
+				pointer-events: none;
+			}
+
+			.modal-content {
+				width: 100%;
+				max-height: 70vh;
+				background: #fff;
+				border-radius: 16px 16px 0 0;
+				padding: 20px;
+				padding-bottom: calc(20px + env(safe-area-inset-bottom));
+				transform: translateY(0);
+				transition: transform 0.3s ease;
+			}
+
+			.question-modal.hidden .modal-content {
+				transform: translateY(100%);
+			}
+
+			.modal-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 16px;
+			}
+
+			.modal-title {
+				font-size: 18px;
+				font-weight: 500;
+				color: #333;
+			}
+
+			.modal-close {
+				width: 28px;
+				height: 28px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				cursor: pointer;
+				font-size: 20px;
+				color: #909399;
+			}
+
+			.modal-count {
+				font-size: 14px;
+				color: #666;
+				margin-bottom: 16px;
+			}
+
+			.num-grid {
+				display: grid;
+				grid-template-columns: repeat(5, 1fr);
+				gap: 12px;
+				max-height: 50vh;
+				overflow-y: auto;
+				padding-bottom: 10px;
+			}
+
+			.num-item {
+				width: 100%;
+				aspect-ratio: 1/1;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border-radius: 8px;
+				background: #e4e7ed;
+				color: #909399;
+				font-size: 15px;
+				cursor: pointer;
+				transition: all 0.2s;
+			}
+
+			.num-item.correct {
+				background: #67c23a;
+				color: #fff;
+			}
+
+			.num-item.wrong {
+				background: #f56c6c;
+				color: #fff;
+			}
+
+			.num-item.active {
+				background: #409eff;
+				color: #fff;
+			}
+
+			.submit-wrap {
+				position: fixed;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				background: #fff;
+				padding: 12px 16px;
+				padding-bottom: calc(12px + env(safe-area-inset-bottom));
+				box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+				z-index: 997;
+			}
+
+			.submit-btn {
+				width: 100%;
+				height: 48px;
+				background: #409eff;
+				color: #fff;
+				border: none;
+				border-radius: 24px;
+				font-size: 16px;
+				font-weight: 500;
+				cursor: pointer;
+				transition: all 0.2s;
+			}
+
+			.submit-btn:active {
+				background: #337ecc;
+			}
+
+			.submit-btn:disabled {
+				background: #b3d8ff;
+				cursor: not-allowed;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app" v-cloak>
+			<div class="loading-wrap" v-if="loading">
+				<div class="loading-spinner"></div>
+				<div class="loading-text">正在加载考试数据...</div>
+			</div>
+
+			<div class="error-wrap" v-if="error">
+				<div class="error-icon">⚠️</div>
+				<div class="error-text">{{ errorMessage }}</div>
+				<button class="retry-btn" @click="loadExamData">重新加载</button>
+			</div>
+
+			<div v-if="!loading && !error">
+				<div class="exam-header">
+					<div class="exam-name">{{ examInfo.name }}</div>
+					<div class="time-title">剩余考试时间</div>
+					<div class="time-value">{{ remainTime }}</div>
+					<div class="count-info">
+						总题数：{{ questionList.length }} 道<br>
+						已作答：{{ doneNum }} 道 / 未作答：{{ undoneNum }} 道<br>
+						当前得分：{{ totalScore }} 分
+					</div>
+				</div>
+
+				<div class="question-list">
+					<div class="question-card" v-for="(question, idx) in questionList" :key="question.id"
+						:id="'q-'+idx">
+						<div class="question-type">{{ getTypeName(question.type) }}</div>
+						<div class="question-title">
+							{{ idx + 1 }}. {{ question.title }}
+						</div>
+
+						<div class="options" v-if="question.type === 1">
+							<div class="option-item" :class="{
+								selected: question.userAnswer === option.id,
+								correct: question.correct && question.userAnswer === option.id,
+								wrong: !question.correct && question.userAnswer === option.id
+							}" v-for="option in question.options" :key="option.id" @click="selectSingleAnswer(idx, option.id)">
+								<div class="option-radio"></div>
+								<div>{{ option.label }}. {{ option.content }}</div>
+							</div>
+						</div>
+
+						<div class="options" v-if="question.type === 2">
+							<div class="option-item" :class="{
+								selected: question.userAnswer && question.userAnswer.includes(option.id),
+								correct: question.correct && question.answer.includes(option.id),
+								wrong: !question.correct && question.userAnswer && question.userAnswer.includes(option.id) && !question.answer.includes(option.id)
+							}" v-for="option in question.options" :key="option.id" @click="selectMultipleAnswer(idx, option.id)">
+								<div class="option-checkbox"></div>
+								<div>{{ option.label }}. {{ option.content }}</div>
+							</div>
+							<button class="submit-btn" style="height: 36px; font-size: 14px; margin-top: 8px;"
+								@click="submitMultipleAnswer(idx)"
+								:disabled="!question.userAnswer || question.userAnswer.length === 0 || question.answered">
+								提交答案
+							</button>
+						</div>
+
+						<div class="options" v-if="question.type === 3">
+							<div class="option-item" :class="{
+								selected: question.userAnswer === option.id,
+								correct: question.correct && question.userAnswer === option.id,
+								wrong: !question.correct && question.userAnswer === option.id
+							}" v-for="option in question.options" :key="option.id" @click="selectSingleAnswer(idx, option.id)">
+								<div class="option-radio"></div>
+								<div>{{ option.content }}</div>
+							</div>
+						</div>
+
+						<div v-if="question.type === 4">
+							<input class="input-answer" placeholder="请输入答案" v-model="question.userAnswer"
+								@blur="submitFillAnswer(idx)">
+						</div>
+
+						<div v-if="question.type === 5">
+							<textarea class="input-answer" placeholder="请输入简答题答案" v-model="question.userAnswer"
+								@blur="submitEssayAnswer(idx)"></textarea>
+						</div>
+
+						<div class="question-status"
+							:class="{correct: question.correct, wrong: question.correct === false}">
+							{{ !question.answered ? '未作答' : (question.correct ? '回答正确' : '回答错误') }}
+						</div>
+					</div>
+				</div>
+
+				<div class="floating-btn" @click="showModal = true">
+					{{ currentIndex + 1 }}
+				</div>
+
+				<div class="question-modal" :class="{hidden: !showModal}" @click.self="showModal = false">
+					<div class="modal-content">
+						<div class="modal-header">
+							<div class="modal-title">题目导航</div>
+							<div class="modal-close" @click="showModal = false">×</div>
+						</div>
+						<div class="modal-count">
+							已答：{{ doneNum }} 道 / 未答：{{ undoneNum }} 道 / 得分：{{ totalScore }} 分
+						</div>
+						<div class="num-grid">
+							<div class="num-item" :class="{
+								correct: item.correct,
+								wrong: item.correct === false,
+								active: currentIndex === idx
+							}" v-for="(item, idx) in questionList" :key="item.id" @click="goToQuestion(idx)">
+								{{ idx + 1 }}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="submit-wrap">
+					<button class="submit-btn" :disabled="submitting" @click="finishExam">
+						{{ submitting ? '正在交卷...' : '交卷并查看成绩' }}
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+		<script>
+			new Vue({
+				el: '#app',
+				data: {
+					examId: '',
+					userId: 'user_123456',
+					examInfo: {},
+					questionList: [],
+					remainTime: "00:00",
+					currentIndex: 0,
+					showModal: false,
+					loading: true,
+					error: false,
+					errorMessage: '',
+					submitting: false,
+					timer: null
+				},
+				computed: {
+					doneNum() {
+						return this.questionList.filter(q => q.answered).length;
+					},
+					undoneNum() {
+						return this.questionList.filter(q => !q.answered).length;
+					},
+					totalScore() {
+						return this.questionList.reduce((sum, q) => {
+							return sum + (q.correct ? q.score : 0);
+						}, 0);
+					}
+				},
+				mounted() {
+					this.examId = this.getUrlParam('examId');
+					this.loadExamData();
+					window.addEventListener('scroll', this.handleScroll, {
+						passive: true
+					});
+				},
+				beforeDestroy() {
+					window.removeEventListener('scroll', this.handleScroll);
+					if (this.timer) clearInterval(this.timer);
+				},
+				methods: {
+					getUrlParam(name) {
+						const reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+						const r = window.location.search.substr(1).match(reg);
+						if (r != null) return decodeURIComponent(r[2]);
+						return '';
+					},
+					getTypeName(type) {
+						const map = {
+							1: '单选题',
+							2: '多选题',
+							3: '判断题',
+							4: '填空题',
+							5: '简答题'
+						};
+						return map[type] || '未知题型';
+					},
+					async loadExamData() {
+						this.loading = true;
+						this.error = false;
+						try {
+							this.examInfo = {
+								name: "在线考试系统",
+								duration: 60
+							};
+							this.questionList = [{
+									id: 1,
+									type: 1,
+									title: '1+1等于几？',
+									score: 10,
+									answer: 2,
+									userAnswer: null,
+									answered: false,
+									correct: null,
+									options: [{
+										id: 1,
+										label: "A",
+										content: "1"
+									}, {
+										id: 2,
+										label: "B",
+										content: "2"
+									}, {
+										id: 3,
+										label: "C",
+										content: "3"
+									}, {
+										id: 4,
+										label: "D",
+										content: "4"
+									}]
+								},
+								{
+									id: 2,
+									type: 2,
+									title: '以下哪些是编程语言？',
+									score: 15,
+									answer: [1, 2, 3],
+									userAnswer: [],
+									answered: false,
+									correct: null,
+									options: [{
+										id: 1,
+										label: "A",
+										content: "Java"
+									}, {
+										id: 2,
+										label: "B",
+										content: "Python"
+									}, {
+										id: 3,
+										label: "C",
+										content: "JavaScript"
+									}, {
+										id: 4,
+										label: "D",
+										content: "HTML"
+									}]
+								},
+								{
+									id: 3,
+									type: 3,
+									title: 'JavaScript是一种编译型语言。',
+									score: 10,
+									answer: 2,
+									userAnswer: null,
+									answered: false,
+									correct: null,
+									options: [{
+										id: 1,
+										label: "A",
+										content: "正确"
+									}, {
+										id: 2,
+										label: "B",
+										content: "错误"
+									}]
+								},
+								{
+									id: 4,
+									type: 4,
+									title: 'HTML的全称是______。',
+									score: 15,
+									answer: '超文本标记语言',
+									userAnswer: '',
+									answered: false,
+									correct: null
+								},
+								{
+									id: 5,
+									type: 5,
+									title: '请简述HTTP和HTTPS的区别。',
+									score: 50,
+									answer: '',
+									userAnswer: '',
+									answered: false,
+									correct: null
+								}
+							];
+							this.startCountdown(this.examInfo.duration);
+							this.loading = false;
+						} catch (err) {
+							this.error = true;
+							this.errorMessage = '加载失败';
+							this.loading = false;
+						}
+					},
+					async submitAnswerToBackend(questionIndex) {
+						const q = this.questionList[questionIndex];
+						let isCorrect = false;
+						if (q.type === 1 || q.type === 3) {
+							isCorrect = q.userAnswer === q.answer;
+						} else if (q.type === 2) {
+							isCorrect = JSON.stringify(q.userAnswer.sort()) === JSON.stringify(q.answer.sort());
+						} else if (q.type === 4) {
+							isCorrect = q.userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
+						} else if (q.type === 5) {
+							isCorrect = true;
+						}
+						q.answered = true;
+						q.correct = isCorrect;
+					},
+					selectSingleAnswer(idx, id) {
+						const q = this.questionList[idx];
+						if (q.answered) return;
+						q.userAnswer = id;
+						this.submitAnswerToBackend(idx);
+					},
+					selectMultipleAnswer(idx, id) {
+						const q = this.questionList[idx];
+						if (q.answered) return;
+						if (!q.userAnswer) q.userAnswer = [];
+						const i = q.userAnswer.indexOf(id);
+						i > -1 ? q.userAnswer.splice(i, 1) : q.userAnswer.push(id);
+					},
+					submitMultipleAnswer(idx) {
+						this.submitAnswerToBackend(idx);
+					},
+					submitFillAnswer(idx) {
+						const q = this.questionList[idx];
+						if (!q.userAnswer.trim() || q.answered) return;
+						this.submitAnswerToBackend(idx);
+					},
+					submitEssayAnswer(idx) {
+						const q = this.questionList[idx];
+						if (!q.userAnswer.trim() || q.answered) return;
+						this.submitAnswerToBackend(idx);
+					},
+					handleScroll() {
+						const st = document.documentElement.scrollTop || document.body.scrollTop;
+						const cards = document.querySelectorAll('.question-card');
+						for (let i = 0; i < cards.length; i++) {
+							if (st < cards[i].offsetTop - 20) {
+								this.currentIndex = Math.max(0, i - 1);
+								return;
+							}
+						}
+						this.currentIndex = cards.length - 1;
+					},
+					goToQuestion(idx) {
+						this.currentIndex = idx;
+						this.showModal = false;
+						this.$nextTick(() => {
+							const el = document.getElementById('q-' + idx);
+							el && window.scrollTo({
+								top: el.offsetTop - 10,
+								behavior: 'smooth'
+							});
+						});
+					},
+					startCountdown(min) {
+						let sec = min * 60;
+						const update = () => {
+							const m = Math.floor(sec / 60).toString().padStart(2, '0');
+							const s = (sec % 60).toString().padStart(2, '0');
+							this.remainTime = `${m}:${s}`;
+						};
+						update();
+						this.timer = setInterval(() => {
+							sec--;
+							if (sec <= 0) {
+								clearInterval(this.timer);
+								alert('时间已到，自动交卷');
+								this.finishExam();
+								return;
+							}
+							update();
+						}, 1000);
+					},
+					async finishExam() {
+						this.submitting = true;
+						try {
+							for (let i = 0; i < this.questionList.length; i++) {
+								const q = this.questionList[i];
+								if (!q.answered && q.userAnswer && q.userAnswer.trim()) {
+									await this.submitAnswerToBackend(i);
+								}
+							}
+							alert(`考试完成！您的最终得分：${this.totalScore} 分`);
+						} catch (e) {
+							alert('交卷失败');
+						} finally {
+							this.submitting = false;
+						}
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

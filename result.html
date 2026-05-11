@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="default">
+		<meta name="format-detection" content="telephone=no">
+		<title>考试结束</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+				font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+				-webkit-tap-highlight-color: transparent;
+			}
+
+			body {
+				background-color: #f5f7fa;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 100vh;
+				padding: 20px;
+			}
+
+			.result-card {
+				background: #fff;
+				width: 100%;
+				max-width: 360px;
+				border-radius: 16px;
+				padding: 40px 20px;
+				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+				text-align: center;
+			}
+
+			.success-icon {
+				font-size: 80px;
+				margin-bottom: 20px;
+			}
+
+			.title {
+				font-size: 24px;
+				font-weight: bold;
+				color: #333;
+				margin-bottom: 30px;
+			}
+
+			.score-label {
+				font-size: 16px;
+				color: #666;
+				margin-bottom: 10px;
+			}
+
+			.score-value {
+				font-size: 72px;
+				font-weight: bold;
+				color: #409eff;
+				line-height: 1;
+				margin-bottom: 40px;
+			}
+
+			.back-btn {
+				width: 100%;
+				height: 48px;
+				background: #409eff;
+				color: #fff;
+				border: none;
+				border-radius: 24px;
+				font-size: 16px;
+				font-weight: 500;
+				cursor: pointer;
+				transition: all 0.2s;
+			}
+
+			.back-btn:active {
+				background: #337ecc;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="result-card">
+			<div class="success-icon">✅</div>
+			<div class="title">考试已完成</div>
+			<div class="score-label">你的得分</div>
+			<div class="score-value" id="score">0</div>
+			<!-- <button class="back-btn" onclick="goBack()">返回首页</button> -->
+		</div>
+
+		<script>
+			// 从URL获取分数参数
+			function getUrlParam(name) {
+				const reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+				const r = window.location.search.substr(1).match(reg);
+				if (r != null) return decodeURIComponent(r[2]);
+				return '0';
+			}
+
+			// 页面加载时显示分数
+			window.onload = function() {
+				const score = getUrlParam('score');
+				document.getElementById('score').textContent = score;
+			}
+
+			// 返回首页
+			function goBack() {
+				// 这里可以修改为你的首页地址
+				window.location.href = '/index.html';
+			}
+		</script>
+	</body>
+</html>
