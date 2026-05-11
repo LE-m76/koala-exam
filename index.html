@@ -471,23 +471,23 @@
 							{{ idx + 1 }}. {{ question.title }}
 						</div>
 
+						<!-- 单选：点击立即判分 -->
 						<div class="options" v-if="question.type === 1">
-							<div class="option-item" :class="{
-								selected: question.userAnswer === option.id,
-								correct: question.correct && question.userAnswer === option.id,
-								wrong: !question.correct && question.userAnswer === option.id
-							}" v-for="option in question.options" :key="option.id" @click="selectSingleAnswer(idx, option.id)">
+							<div class="option-item" :class="{selected: question.userAnswer === option.id,
+									correct: question.correct && question.userAnswer === option.id,
+									wrong: !question.correct && question.userAnswer === option.id
+								}" v-for="option in question.options" :key="option.id" @click="selectSingleAnswer(idx, option.id)">
 								<div class="option-radio"></div>
 								<div>{{ option.label }}. {{ option.content }}</div>
 							</div>
 						</div>
 
+						<!-- 多选：只勾选，提交才判分 -->
 						<div class="options" v-if="question.type === 2">
-							<div class="option-item" :class="{
-								selected: question.userAnswer && question.userAnswer.includes(option.id),
-								correct: question.correct && question.answer.includes(option.id),
-								wrong: !question.correct && question.userAnswer && question.userAnswer.includes(option.id) && !question.answer.includes(option.id)
-							}" v-for="option in question.options" :key="option.id" @click="selectMultipleAnswer(idx, option.id)">
+							<div class="option-item" :class="{selected: question.userAnswer && question.userAnswer.includes(option.id),
+									correct: question.answered && question.correct && question.answer.includes(option.id),
+									wrong: question.answered && !question.correct && question.userAnswer && question.userAnswer.includes(option.id) && !question.answer.includes(option.id)
+								}" v-for="option in question.options" :key="option.id" @click="selectMultipleAnswer(idx, option.id)">
 								<div class="option-checkbox"></div>
 								<div>{{ option.label }}. {{ option.content }}</div>
 							</div>
@@ -498,25 +498,21 @@
 							</button>
 						</div>
 
+						<!-- 判断：点击立即判分 -->
 						<div class="options" v-if="question.type === 3">
-							<div class="option-item" :class="{
-								selected: question.userAnswer === option.id,
-								correct: question.correct && question.userAnswer === option.id,
-								wrong: !question.correct && question.userAnswer === option.id
-							}" v-for="option in question.options" :key="option.id" @click="selectSingleAnswer(idx, option.id)">
+							<div class="option-item" :class="{selected: question.userAnswer === option.id,
+									correct: question.correct && question.userAnswer === option.id,
+									wrong: !question.correct && question.userAnswer === option.id
+								}" v-for="option in question.options" :key="option.id" @click="selectSingleAnswer(idx, option.id)">
 								<div class="option-radio"></div>
 								<div>{{ option.content }}</div>
 							</div>
 						</div>
 
+						<!-- 填空 -->
 						<div v-if="question.type === 4">
 							<input class="input-answer" placeholder="请输入答案" v-model="question.userAnswer"
-								@blur="submitFillAnswer(idx)">
-						</div>
-
-						<div v-if="question.type === 5">
-							<textarea class="input-answer" placeholder="请输入简答题答案" v-model="question.userAnswer"
-								@blur="submitEssayAnswer(idx)"></textarea>
+								@blur="submitFillAnswer(idx)" :disabled="question.answered">
 						</div>
 
 						<div class="question-status"
@@ -659,8 +655,7 @@
 							1: '单选题',
 							2: '多选题',
 							3: '判断题',
-							4: '填空题',
-							5: '简答题'
+							4: '填空题'
 						};
 						return map[type] || '未知题型';
 					},
@@ -668,7 +663,6 @@
 						this.loading = true;
 						this.error = false;
 						try {
-							console.log('预览模式：20道题');
 							response = {
 								data: {
 									code: 200,
@@ -1051,7 +1045,61 @@
 												userAnswer: '',
 												answered: false,
 												correct: null
-											}
+											},
+											{
+												id: 18,
+												type: 1,
+												title: 'Vue属于什么开发框架？',
+												score: 5,
+												answer: 2,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													label: 'A',
+													content: '后端'
+												}, {
+													id: 2,
+													label: 'B',
+													content: '前端'
+												}, {
+													id: 3,
+													label: 'C',
+													content: '数据库'
+												}, {
+													id: 4,
+													label: 'D',
+													content: '运维'
+												}]
+											},
+											{
+												id: 19,
+												type: 3,
+												title: 'Vue可以开发小程序。',
+												score: 5,
+												answer: 1,
+												userAnswer: null,
+												answered: false,
+												correct: null,
+												options: [{
+													id: 1,
+													content: '正确'
+												}, {
+													id: 2,
+													content: '错误'
+												}]
+											},
+											{
+												id: 20,
+												type: 4,
+												title: 'JS中文简称是：______',
+												score: 10,
+												answer: '脚本语言',
+												userAnswer: '',
+												answered: false,
+												correct: null
+											},
 										]
 									}
 								}
@@ -1087,8 +1135,6 @@
 							} else if (question.type === 4) {
 								isCorrect = question.userAnswer.trim().toLowerCase() === question.answer.trim()
 									.toLowerCase();
-							} else if (question.type === 5) {
-								isCorrect = true;
 							}
 							question.answered = true;
 							question.correct = isCorrect;
@@ -1099,7 +1145,7 @@
 					selectSingleAnswer(questionIndex, optionId) {
 						const question = this.questionList[questionIndex];
 						if (question.answered) return;
-						// if (!confirm('确定要提交这个答案吗？')) return;
+						// 单选、判断 直接赋值并立即判分
 						question.userAnswer = optionId;
 						this.submitAnswerToBackend(questionIndex);
 					},
@@ -1111,19 +1157,13 @@
 						index > -1 ? question.userAnswer.splice(index, 1) : question.userAnswer.push(optionId);
 					},
 					submitMultipleAnswer(questionIndex) {
-						// if (!confirm('确定提交多选题答案？')) return;
+						if (!confirm('确定提交多选题答案？')) return;
 						this.submitAnswerToBackend(questionIndex);
 					},
 					submitFillAnswer(questionIndex) {
 						const q = this.questionList[questionIndex];
 						if (q.answered || !q.userAnswer.trim()) return;
 						if (!confirm('确定提交填空题答案？')) return;
-						this.submitAnswerToBackend(questionIndex);
-					},
-					submitEssayAnswer(questionIndex) {
-						const q = this.questionList[questionIndex];
-						if (q.answered || !q.userAnswer.trim()) return;
-						if (!confirm('确定提交简答题答案？')) return;
 						this.submitAnswerToBackend(questionIndex);
 					},
 					handleScroll() {
@@ -1156,8 +1196,7 @@
 							let hasAnswer = false;
 							if (q.type === 1 || q.type === 3) hasAnswer = q.userAnswer != null;
 							else if (q.type === 2) hasAnswer = q.userAnswer && q.userAnswer.length > 0;
-							else if (q.type === 4 || q.type === 5) hasAnswer = q.userAnswer && q.userAnswer
-								.trim() !== '';
+							else if (q.type === 4) hasAnswer = q.userAnswer && q.userAnswer.trim() !== '';
 							if (!hasAnswer) {
 								alert(`第 ${i+1} 题未完成，请完成后再交卷！`);
 								this.goToQuestion(i);
