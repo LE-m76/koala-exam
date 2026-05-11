@@ -2,14 +2,14 @@
 <html lang="zh-CN">
 	<head>
 		<meta charset="UTF-8">
-		<link rel="icon" type="image/png"
-			href="https://www.maoblog.dpdns.org/panacea/image/5ad73da9a183405585c6b0e913a8ecce.png">
+
 		<!-- H5移动端适配必备 -->
 		<meta name="viewport"
 			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="default">
 		<meta name="format-detection" content="telephone=no">
+		<link rel="icon" type="image/png" sizes="32x32" href="./img/aca5124db1ffbaa7cb4961ca70523228.ico">
 		<title>在线考试</title>
 		<style>
 			* {
@@ -676,8 +676,8 @@
 
 						try {
 							let response;
-
-							if (this.examId) {
+							console.log(this.examId)
+							if (false) {
 								// 有examId，请求真实接口
 								response = await axios.get(`/api/exam/getExamInfo?examId=${this.examId}`);
 							} else {
