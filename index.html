@@ -457,9 +457,9 @@
 					<div class="time-title">剩余考试时间</div>
 					<div class="time-value">{{ remainTime }}</div>
 					<div class="count-info">
-						总题数：{{ questionList.length }} 道<br>
+						总题数：{{ questionList.length }} 道（每题5分）<br>
 						已作答：{{ doneNum }} 道 / 未作答：{{ undoneNum }} 道<br>
-						当前得分：{{ totalScore }} 分
+						当前得分：{{ totalScore }} 分 / 满分100
 					</div>
 				</div>
 
@@ -583,14 +583,20 @@
 					undoneNum() {
 						return this.questionList.filter(q => !q.answered).length;
 					},
+					// 每题固定5分，总分封顶100
 					totalScore() {
-						return this.questionList.reduce((sum, q) => {
-							return sum + (q.correct ? q.score : 0);
-						}, 0);
+						let rightNum = this.questionList.filter(q => q.correct).length;
+						let score = rightNum * 5;
+						return score > 100 ? 100 : score;
 					}
 				},
 				mounted() {
-					this.examId = this.getUrlParam('examId');
+					// 支持重新考试标识
+					let isRestart = this.getUrlParam('restart');
+					if (isRestart === '1') {
+						localStorage.removeItem(this.persistKey);
+					}
+					this.examId = this.getUrlParam('examId') || 'exam_001';
 					this.loadExamData();
 					window.addEventListener('scroll', this.handleScroll, {
 						passive: true
@@ -601,6 +607,11 @@
 					if (this.timer) clearInterval(this.timer);
 				},
 				methods: {
+					// 重新考试
+					restartExam() {
+						localStorage.removeItem(this.persistKey);
+						window.location.href = window.location.pathname + "?examId=exam_001&restart=1";
+					},
 					initPersistData() {
 						let data = localStorage.getItem(this.persistKey);
 						if (data) {
@@ -663,7 +674,7 @@
 						this.loading = true;
 						this.error = false;
 						try {
-							response = {
+							const response = {
 								data: {
 									code: 200,
 									data: {
@@ -810,7 +821,7 @@
 												id: 6,
 												type: 2,
 												title: '下列哪些属于前端三大件？',
-												score: 10,
+												score: 5,
 												answer: [1, 2, 3],
 												userAnswer: [],
 												answered: false,
@@ -837,7 +848,7 @@
 												id: 7,
 												type: 2,
 												title: '下列哪些属于块级元素？',
-												score: 10,
+												score: 5,
 												answer: [1, 2, 4],
 												userAnswer: [],
 												answered: false,
@@ -864,7 +875,7 @@
 												id: 8,
 												type: 2,
 												title: '下列哪些属于行内元素？',
-												score: 10,
+												score: 5,
 												answer: [2, 3],
 												userAnswer: [],
 												answered: false,
@@ -891,7 +902,7 @@
 												id: 9,
 												type: 2,
 												title: '下列哪些属于编程语言？',
-												score: 10,
+												score: 5,
 												answer: [1, 2, 3],
 												userAnswer: [],
 												answered: false,
@@ -918,7 +929,7 @@
 												id: 10,
 												type: 2,
 												title: '下列哪些属于数据库？',
-												score: 10,
+												score: 5,
 												answer: [2, 4],
 												userAnswer: [],
 												answered: false,
@@ -1030,7 +1041,7 @@
 												id: 16,
 												type: 4,
 												title: '实现网页结构的语言是：______',
-												score: 10,
+												score: 5,
 												answer: 'HTML',
 												userAnswer: '',
 												answered: false,
@@ -1040,7 +1051,7 @@
 												id: 17,
 												type: 4,
 												title: '实现网页样式的语言是：______',
-												score: 10,
+												score: 5,
 												answer: 'CSS',
 												userAnswer: '',
 												answered: false,
@@ -1094,12 +1105,12 @@
 												id: 20,
 												type: 4,
 												title: 'JS中文简称是：______',
-												score: 10,
+												score: 5,
 												answer: '脚本语言',
 												userAnswer: '',
 												answered: false,
 												correct: null
-											},
+											}
 										]
 									}
 								}
@@ -1116,6 +1127,22 @@
 							this.errorMessage = err.message || '网络错误';
 							this.loading = false;
 						}
+					},
+					// 提交后自动下一题
+					autoNextQuestion(idx) {
+						// 最后一题不跳转
+						if (idx >= this.questionList.length - 1) return;
+						let nextIdx = idx + 1;
+						this.currentIndex = nextIdx;
+						this.$nextTick(() => {
+							const card = document.getElementById('q-' + nextIdx);
+							if (card) {
+								window.scrollTo({
+									top: card.offsetTop - 10,
+									behavior: 'smooth'
+								});
+							}
+						});
 					},
 					async submitAnswerToBackend(questionIndex) {
 						const question = this.questionList[questionIndex];
@@ -1138,6 +1165,8 @@
 							}
 							question.answered = true;
 							question.correct = isCorrect;
+							// 自动跳转到下一题
+							this.autoNextQuestion(questionIndex);
 						} catch (err) {
 							alert('提交失败');
 						}
@@ -1145,7 +1174,6 @@
 					selectSingleAnswer(questionIndex, optionId) {
 						const question = this.questionList[questionIndex];
 						if (question.answered) return;
-						// 单选、判断 直接赋值并立即判分
 						question.userAnswer = optionId;
 						this.submitAnswerToBackend(questionIndex);
 					},
@@ -1210,7 +1238,8 @@
 								if (!q.answered) await this.submitAnswerToBackend(i);
 							}
 							localStorage.removeItem(this.persistKey);
-							window.location.href = `result.html?score=${this.totalScore}`;
+							// 成绩页带上可重新考试参数
+							window.location.href = `result.html?score=${this.totalScore}&canRestart=1`;
 						} catch (err) {
 							alert('交卷失败');
 						} finally {
